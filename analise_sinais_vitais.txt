@@ -1,0 +1,9 @@
+📊 Resultado da Análise dos Sinais Vitais:
+
+              Parâmetro  Valor Inicial  Novo Valor Status  % Alteração
+                   SpO2          100.0        90.0  Baixo   -10.000000
+    Frequência Cardíaca          100.0        90.0 Normal   -10.000000
+      Pressão Sistólica          100.0        90.0 Normal   -10.000000
+     Pressão Diastólica          100.0        90.0 Normal   -10.000000
+Frequência Respiratória         1100.0        90.0   Alto   -91.818182
+                  Pulso          100.0        90.0 Normal   -10.000000
