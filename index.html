@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Análise de Sinais Vitais</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background-color: #f4f6f8;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    form, .result-container {
+      max-width: 700px;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    fieldset {
+      border: none;
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-top: 0.5rem;
+      font-weight: bold;
+      color: #555;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: #2a9d8f;
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #21867a;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    th {
+      background-color: #264653;
+      color: white;
+    }
+    .status-normal { color: green; font-weight: bold; }
+    .status-baixo { color: orange; font-weight: bold; }
+    .status-alto { color: red; font-weight: bold; }
+    .interpretacao {
+      font-size: 1.1rem;
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: #e0f7f4;
+      border-left: 6px solid #2a9d8f;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📥 Análise de Sinais Vitais</h1>
+
+  <form id="form-sinais">
+    <fieldset>
+      <legend><strong>Valores Iniciais</strong></legend>
+      <label>SpO₂ (%) <input type="number" id="SpO₂Inicial" required></label>
+      <label>Frequência Cardíaca <input type="number" id="Frequência CardíacaInicial" required></label>
+      <label>Pressão Sistólica <input type="number" id="Pressão SistólicaInicial" required></label>
+      <label>Pressão Diastólica <input type="number" id="Pressão DiastólicaInicial" required></label>
+      <label>Frequência Respiratória <input type="number" id="Frequência RespiratóriaInicial" required></label>
+      <label>Pulso <input type="number" id="PulsoInicial" required></label>
+    </fieldset>
+
+    <fieldset>
+      <legend><strong>Novos Valores</strong></legend>
+      <label>SpO₂ (%) <input type="number" id="SpO₂Novo" required></label>
+      <label>Frequência Cardíaca <input type="number" id="Frequência CardíacaNovo" required></label>
+      <label>Pressão Sistólica <input type="number" id="Pressão SistólicaNovo" required></label>
+      <label>Pressão Diastólica <input type="number" id="Pressão DiastólicaNovo" required></label>
+      <label>Frequência Respiratória <input type="number" id="Frequência RespiratóriaNovo" required></label>
+      <label>Pulso <input type="number" id="PulsoNovo" required></label>
+    </fieldset>
+
+    <button type="submit">Analisar</button>
+  </form>
+
+  <div id="resultado" class="result-container" style="display:none;">
+    <h2>📊 Resultado da Análise</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Parâmetro</th>
+          <th>Valor Inicial</th>
+          <th>Novo Valor</th>
+          <th>Status</th>
+          <th>% Alteração</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-corpo"></tbody>
+    </table>
+    <div class="interpretacao" id="interpretacao-clinica"></div>
+  </div>
+
+  <script>
+    const parametros = [
+      { nome: "SpO₂", limite: [95, 100] },
+      { nome: "Frequência Cardíaca", limite: [60, 100] },
+      { nome: "Pressão Sistólica", limite: [90, 130] },
+      { nome: "Pressão Diastólica", limite: [60, 90] },
+      { nome: "Frequência Respiratória", limite: [12, 20] },
+      { nome: "Pulso", limite: [60, 100] }
+    ];
+
+    function classificarStatus(valor, [min, max]) {
+      if (valor < min) return "Baixo";
+      if (valor > max) return "Alto";
+      return "Normal";
+    }
+
+    function interpretarClinica(valores) {
+      const { ["SpO₂"]: spo2, ["Frequência Respiratória"]: fr, ["Frequência Cardíaca"]: fc, ["Pressão Sistólica"]: sist, ["Pressão Diastólica"]: diast } = valores;
+      const pam = (sist + diast) / 2;
+
+      if (spo2 < 95 && fr > 20) return "🫁 Possível comprometimento pulmonar.";
+      if (fc > 100 && pam < 90) return "💉 Suspeita de choque ou desidratação.";
+      if (fc > 100 && fr > 20 && pam >= 90 && pam <= 130) return "🔥 Estresse, dor ou febre.";
+      if (spo2 >= 95 && fc >= 60 && fc <= 100 && sist >= 90 && sist <= 130 && diast >= 60 && diast <= 90 && fr >= 12 && fr <= 20)
+        return "✅ Parâmetros dentro da normalidade.";
+      return "❓ Situação clínica não categorizada.";
+    }
+
+    document.getElementById("form-sinais").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const tabela = document.getElementById("tabela-corpo");
+      tabela.innerHTML = "";
+
+      const valoresIniciais = {};
+      const valoresNovos = {};
+
+      parametros.forEach(({ nome }) => {
+        valoresIniciais[nome] = parseFloat(document.getElementById(nome + "Inicial").value);
+        valoresNovos[nome] = parseFloat(document.getElementById(nome + "Novo").value);
+      });
+
+      parametros.forEach(({ nome, limite }) => {
+        const inicial = valoresIniciais[nome];
+        const novo = valoresNovos[nome];
+        const alteracao = ((novo - inicial) / inicial * 100).toFixed(2);
+        const status = classificarStatus(novo, limite);
+
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+          <td>${nome}</td>
+          <td>${inicial}</td>
+          <td>${novo}</td>
+          <td class="status-${status.toLowerCase()}">${status}</td>
+          <td>${alteracao}%</td>
+        `;
+        tabela.appendChild(linha);
+      });
+
+      const interpretacao = interpretarClinica(valoresNovos);
+      document.getElementById("interpretacao-clinica").textContent = interpretacao;
+      document.getElementById("resultado").style.display = "block";
+    });
+  </script>
+
+</body>
+</html>
